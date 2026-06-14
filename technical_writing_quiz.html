@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical Writing Quiz — S2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #eef2f7;
+    --card: #ffffff;
+    --border: #d0d8e4;
+    --text: #1a2233;
+    --muted: #6b7a96;
+    --accent: #1d4ed8;
+    --accent-light: #eff3ff;
+    --correct: #166534;
+    --correct-bg: #dcfce7;
+    --correct-border: #4ade80;
+    --wrong: #991b1b;
+    --wrong-bg: #fee2e2;
+    --wrong-border: #f87171;
+    --revealed: rgba(220,252,231,0.4);
+    --rule: #c7d2e8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 0% 0%, rgba(29,78,216,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgba(109,40,217,0.05) 0%, transparent 55%);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2.5rem 1rem 5rem;
+  }
+
+  /* ─── Header ─── */
+  header {
+    max-width: 760px;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+    padding-bottom: 2rem;
+    position: relative;
+  }
+
+  .course-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.28rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 span { color: var(--accent); font-style: italic; }
+
+  .tagline {
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-weight: 300;
+    margin-top: 0.6rem;
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #818cf8);
+    border-radius: 2px;
+    margin: 1.2rem auto 0;
+  }
+
+  /* ─── Score bar ─── */
+  #score-bar {
+    max-width: 760px;
+    margin: 0 auto 2rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.85rem 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  }
+
+  .score-label { font-size: 0.82rem; color: var(--muted); font-weight: 300; white-space: nowrap; }
+  #progress-wrap { flex: 1; height: 7px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #6366f1); border-radius: 999px; transition: width 0.4s ease; }
+  #score-display { font-family: 'DM Serif Display', serif; font-size: 1.15rem; color: var(--accent); white-space: nowrap; }
+
+  /* ─── Question card ─── */
+  .q-card {
+    max-width: 760px;
+    margin: 0 auto 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .q-card:hover { box-shadow: 0 5px 20px rgba(29,78,216,0.09); transform: translateY(-1px); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.15rem 1.3rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .q-num {
+    min-width: 2rem;
+    height: 2rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  .q-text {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  /* ─── Options ─── */
+  .options-list {
+    padding: 0.85rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    cursor: pointer;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    text-align: left;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    transform: translateX(3px);
+  }
+
+  .opt-letter {
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .option:hover:not(.disabled) .opt-letter {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .option.correct {
+    background: var(--correct-bg);
+    border-color: var(--correct-border);
+    color: var(--correct);
+  }
+
+  .option.correct .opt-letter {
+    background: var(--correct);
+    border-color: var(--correct);
+    color: white;
+  }
+
+  .option.wrong {
+    background: var(--wrong-bg);
+    border-color: var(--wrong-border);
+    color: var(--wrong);
+  }
+
+  .option.wrong .opt-letter {
+    background: var(--wrong);
+    border-color: var(--wrong);
+    color: white;
+  }
+
+  .option.revealed-correct {
+    background: rgba(220,252,231,0.3);
+    border-color: var(--correct-border);
+    color: var(--correct);
+    opacity: 0.7;
+  }
+
+  .option.revealed-correct .opt-letter {
+    background: var(--correct-border);
+    border-color: var(--correct-border);
+    color: white;
+  }
+
+  .option.disabled { pointer-events: none; }
+
+  /* ─── Explanation ─── */
+  .explanation {
+    display: none;
+    margin: 0 1.3rem 1rem;
+    padding: 0.8rem 1rem 0.8rem 1rem;
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: #334155;
+  }
+
+  .explanation.show { display: block; animation: slideIn 0.3s ease; }
+
+  .expl-label {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pop-correct {
+    0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+    60%  { box-shadow: 0 0 0 8px rgba(74,222,128,0); }
+    100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(3px); }
+    25%     { transform: translateX(-5px); }
+    75%     { transform: translateX(5px); }
+  }
+
+  .option.correct { animation: pop-correct 0.6s ease forwards; }
+  .option.wrong   { animation: shake 0.35s ease; }
+
+  /* ─── Results ─── */
+  #results-banner {
+    display: none;
+    max-width: 760px;
+    margin: 3rem auto 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(29,78,216,0.1);
+  }
+
+  #results-banner h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  #final-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3.5rem;
+    color: var(--accent);
+    margin: 0.75rem 0 0.5rem;
+    line-height: 1;
+  }
+
+  #final-pct {
+    display: inline-block;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+  }
+
+  #final-msg {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-style: italic;
+    max-width: 420px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 3.5rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.03em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="course-tag">Technical Writing · S2026</div>
+  <h1>Technical Writing<br><span>Quiz</span></h1>
+  <p class="tagline">Double-click any option to submit your answer.</p>
+  <div class="divider"></div>
+</header>
+
+<div id="score-bar">
+  <span class="score-label">Score</span>
+  <div id="progress-wrap"><div id="progress-fill"></div></div>
+  <span id="score-display">0 / 20</span>
+</div>
+
+<div id="quiz-container"></div>
+
+<div id="results-banner">
+  <h3>Quiz Complete!</h3>
+  <div id="final-score"></div>
+  <span id="final-pct"></span>
+  <p id="final-msg"></p>
+</div>
+
+<footer>Double-click an option to check your answer &nbsp;·&nbsp; Green = Correct &nbsp;·&nbsp; Red = Incorrect</footer>
+
+<script>
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const ANSWERS = {
+  1:"A",2:"B",3:"D",4:"C",5:"B",6:"A",7:"D",8:"C",9:"A",10:"B",
+  11:"D",12:"D",13:"C",14:"A",15:"B",16:"C",17:"C",18:"A",19:"C",20:"B"
+};
+
+const EXPLANATIONS = {
+  1:`<span class="expl-label">Correct: A — Objectivity</span><br>Technical writing must present information factually and impartially. Phrases like "absolutely love" and "amazing" are emotional opinions, directly violating the principle of <strong>objectivity</strong>.`,
+  2:`<span class="expl-label">Correct: B — Audience</span><br>The writer ignored who would be reading the document. Using heavy jargon for Grade 7 students fails to consider the <strong>audience's</strong> background and reading level.`,
+  3:`<span class="expl-label">Correct: D — Researcher's step-by-step guide</span><br>A step-by-step guide for operating a microscope is purely functional, precise, and objective — the hallmarks of <strong>technical writing</strong> as opposed to creative or expressive forms.`,
+  4:`<span class="expl-label">Correct: C — Conciseness</span><br>"At the present time, we are currently conducting an investigation" is redundant. "We are investigating" says the same thing. Business writing should be <strong>concise</strong> — no wasted words.`,
+  5:`<span class="expl-label">Correct: B — Chronological order</span><br>Assembly instructions depend on sequence — step 1 before step 2, etc. This is <strong>chronological order</strong>, organizing information by the time/sequence in which actions must occur.`,
+  6:`<span class="expl-label">Correct: A — Coherence</span><br>Ideas that jump randomly lack logical flow and connection. <strong>Coherence</strong> ensures that each sentence and paragraph connects smoothly to create a unified, logical whole.`,
+  7:`<span class="expl-label">Correct: D — Machine assembly guide</span><br>Graphic aids (diagrams, labeled illustrations) are essential in technical documents like assembly guides to clarify steps visually. Poetry, journals, and stories rely on words alone.`,
+  8:`<span class="expl-label">Correct: C — "You will enjoy…"</span><br>The <strong>YOU-attitude</strong> centers the reader, not the writer or company. "You will enjoy reliable and excellent services" directly addresses the reader's benefit rather than highlighting the company.`,
+  9:`<span class="expl-label">Correct: A — Completeness</span><br>Omitting safety precautions leaves the document incomplete. <strong>Completeness</strong> requires that all necessary information — including warnings and precautions — be included.`,
+  10:`<span class="expl-label">Correct: B — Company suggests new strategies</span><br>A <strong>proposal</strong> recommends a course of action to address a problem or opportunity. Suggesting new strategies to improve productivity fits this purpose exactly.`,
+  11:`<span class="expl-label">Correct: D — Abbreviations in the dateline</span><br>Formal business letters require the month to be spelled out in full (e.g., <em>October 13, 1992</em>), not abbreviated as "Oct." Abbreviations are considered informal in the dateline.`,
+  12:`<span class="expl-label">Correct: D — "Utilize the apparatus subsequent to initialization."</span><br>Wait — actually Option A ("Use the machine after starting it") is clearest, but per the answer key D is listed. This highlights that "utilize" and "subsequent to" are unnecessarily complex; plain language like "Use the machine after starting it" is best practice. (Note: verify with your instructor.)`,
+  13:`<span class="expl-label">Correct: C — Accurate and unbiased communication</span><br><strong>Objectivity</strong> ensures that technical information is based on facts, not personal feelings or bias, making it reliable and credible for the reader.`,
+  14:`<span class="expl-label">Correct: A — Consistency</span><br>Shifting between formal language and slang within the same document violates <strong>consistency</strong> — the tone, style, and language level must remain uniform throughout.`,
+  15:`<span class="expl-label">Correct: B — Printed action memo</span><br>A <strong>printed action memo</strong> is designed for quick reading and decision-making, with clear action items. Executives need concise, scannable documents — not lengthy manuals or monographs.`,
+  16:`<span class="expl-label">Correct: C — Graphic aids and diagrams</span><br>Assembly instructions for complex equipment like drones benefit enormously from <strong>graphic aids and diagrams</strong>, which show spatial relationships and component placement far more clearly than text alone.`,
+  17:`<span class="expl-label">Correct: C — Accuracy and clarity are prioritized</span><br>Technical writing serves a functional purpose: to inform precisely. <strong>Accuracy and clarity</strong> take precedence over personal feelings, creativity, or artistic expression.`,
+  18:`<span class="expl-label">Correct: A — Credibility</span><br>Exaggerating product claims without evidence undermines the trustworthiness of the document. <strong>Credibility</strong> requires that all claims be accurate, verifiable, and supported by evidence.`,
+  19:`<span class="expl-label">Correct: C — Mrs. Angela Cruz</span><br><strong>Mrs.</strong> is the correct title for a married woman in a formal inside address. "Miss" is for unmarried women; "Ms." is neutral (marital status unknown); "Mmes." is plural.`,
+  20:`<span class="expl-label">Correct: B — Confuses creative with technical writing</span><br>Using poetic metaphors and vague descriptions in a scientific report substitutes artistic language for factual precision — it <strong>confuses creative writing with technical writing</strong> conventions.`
+};
+
+const QUESTIONS = [
+  {id:1, text:`A company released a user manual filled with emotional language such as "You will absolutely love this amazing machine!" Which principle of technical writing is MOST violated?`,
+   opts:[["A","Objectivity"],["B","Organization"],["C","Expression"],["D","Audience"]]},
+  {id:2, text:`A writer prepared a report about laboratory safety for Grade 7 students using highly scientific jargon and complex formulas without explanation. Which property of technical writing did the writer FAIL to consider most?`,
+   opts:[["A","Subject Matter"],["B","Audience"],["C","Style"],["D","Arrangement of Materials"]]},
+  {id:3, text:`Which situation BEST demonstrates the difference between technical writing and creative writing?`,
+   opts:[["A","A novelist writes a symbolic poem about war."],["B","A playwright writes a dramatic script."],["C","A blogger writes about travel experiences emotionally."],["D","A researcher writes a step-by-step guide for operating a microscope."]]},
+  {id:4, text:`A business letter states: "At the present time, we are currently conducting an investigation regarding the matter mentioned above." Which characteristic of a business letter should be improved MOST?`,
+   opts:[["A","Credibility"],["B","Clarity"],["C","Conciseness"],["D","Coherence"]]},
+  {id:5, text:`A technical writer organized a repair manual according to the order in which the machine parts should be assembled. Which organizational method is MOST appropriate?`,
+   opts:[["A","Spatial order"],["B","Chronological order"],["C","General-to-specific order"],["D","Arbitrary order"]]},
+  {id:6, text:`A company memo contains correct grammar and complete information, but ideas jump randomly from topic to topic. Which characteristic is lacking?`,
+   opts:[["A","Coherence"],["B","Courtesy"],["C","Consistency"],["D","Credibility"]]},
+  {id:7, text:`Which of the following would MOST likely require the use of graphic aids?`,
+   opts:[["A","A poem anthology"],["B","A reflective journal"],["C","A short story collection"],["D","A machine assembly guide"]]},
+  {id:8, text:`A student writes: "We are happy to inform you that our company offers excellent services." Which revision BEST applies the "YOU-attitude" in business writing?`,
+   opts:[["A","Our company proudly provides excellent services."],["B","Excellent services are offered by our company."],["C","You will enjoy reliable and excellent services from our company."],["D","The company is pleased to announce its services."]]},
+  {id:9, text:`A report explains how to use a fire extinguisher but omits the safety precautions before operating it. Which characteristic of business writing is MOST affected?`,
+   opts:[["A","Completeness"],["B","Courtesy"],["C","Clarity"],["D","Consistency"]]},
+  {id:10, text:`Which scenario BEST reflects the purpose of a proposal?`,
+   opts:[["A","A manager sends a reminder about office attendance."],["B","A company suggests new strategies to improve productivity."],["C","A teacher writes instructions for a science experiment."],["D","A writer advertises a new product using persuasive slogans."]]},
+  {id:11, text:`A writer used the date format "Oct. 13, 1992" in a formal business letter. Why is this considered incorrect according to the guidelines?`,
+   opts:[["A","The year should come first."],["B","The month should be numerical only."],["C","Military style is the only accepted format."],["D","Abbreviations should not be used in the dateline."]]},
+  {id:12, text:`Which revision BEST improves clarity in technical writing?`,
+   opts:[["A","Use the machine after starting it."],["B","The apparatus should subsequently be utilized."],["C","Initialization must precede apparatus utilization."],["D","Utilize the apparatus subsequent to initialization."]]},
+  {id:13, text:`Why is objectivity important in technical writing?`,
+   opts:[["A","It makes the text more emotional."],["B","It allows readers to imagine freely."],["C","It ensures accurate and unbiased communication of information."],["D","It increases artistic expression."]]},
+  {id:14, text:`A business letter consistently shifts from formal language to slang expressions. Which characteristic is MOST violated?`,
+   opts:[["A","Consistency"],["B","Courtesy"],["C","Completeness"],["D","Credibility"]]},
+  {id:15, text:`Which document would BEST help busy executives make quick decisions?`,
+   opts:[["A","Monograph"],["B","Printed action memo"],["C","Instructional manual"],["D","Brochure"]]},
+  {id:16, text:`A writer is preparing instructions for assembling a drone. Which feature would MOST improve reader understanding?`,
+   opts:[["A","Figurative language"],["B","Symbolic imagery"],["C","Graphic aids and diagrams"],["D","Personal anecdotes"]]},
+  {id:17, text:`Which statement BEST explains why technical writing is usually formal and objective?`,
+   opts:[["A","Technical writing focuses on imagination and artistic expression."],["B","Readers expect emotional storytelling."],["C","Accuracy and clarity are prioritized over personal feelings."],["D","Writers are encouraged to use symbolic language."]]},
+  {id:18, text:`A company brochure exaggerates product claims without evidence. Which characteristic of business writing becomes questionable?`,
+   opts:[["A","Credibility"],["B","Coherence"],["C","Completeness"],["D","Consistency"]]},
+  {id:19, text:`Which inside address is MOST appropriate for a married woman?`,
+   opts:[["A","Miss Angela Cruz"],["B","Ms. Angela Cruz"],["C","Mrs. Angela Cruz"],["D","Mmes. Angela Cruz"]]},
+  {id:20, text:`A technical report about climate change uses poetic metaphors and vague descriptions instead of precise scientific explanations. What does this reveal about the writing?`,
+   opts:[["A","It successfully follows technical writing conventions."],["B","It confuses creative writing with technical writing."],["C","It demonstrates strong objectivity."],["D","It improves the accuracy of information."]]}
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+const answered = {};
+let correctCount = 0;
+
+// ─── Sound ────────────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx;
+
+function getACtx() { if (!actx) actx = new AudioCtx(); return actx; }
+
+function playCorrect() {
+  const ac = getACtx();
+  [0, 0.13, 0.26].forEach((t, i) => {
+    const freq = [523.25, 659.25, 783.99][i];
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, ac.currentTime + t);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + 0.35);
+    osc.start(ac.currentTime + t);
+    osc.stop(ac.currentTime + t + 0.35);
+  });
+}
+
+function playWrong() {
+  const ac = getACtx();
+  const osc = ac.createOscillator();
+  const gain = ac.createGain();
+  osc.connect(gain); gain.connect(ac.destination);
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(200, ac.currentTime);
+  osc.frequency.linearRampToValueAtTime(130, ac.currentTime + 0.3);
+  gain.gain.setValueAtTime(0.08, ac.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.32);
+  osc.start(ac.currentTime);
+  osc.stop(ac.currentTime + 0.32);
+}
+
+// ─── Build ────────────────────────────────────────────────────────────────────
+function buildQuiz() {
+  const container = document.getElementById('quiz-container');
+
+  QUESTIONS.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `q${q.id}`;
+
+    const header = document.createElement('div');
+    header.className = 'q-header';
+    header.innerHTML = `<div class="q-num">${q.id}</div><div class="q-text">${q.text}</div>`;
+    card.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'options-list';
+
+    q.opts.forEach(([letter, label]) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.dataset.letter = letter;
+      btn.dataset.qid = q.id;
+      btn.innerHTML = `<span class="opt-letter">${letter}</span>${label}`;
+      btn.addEventListener('dblclick', handleAnswer);
+      list.appendChild(btn);
+    });
+
+    card.appendChild(list);
+
+    const expl = document.createElement('div');
+    expl.className = 'explanation';
+    expl.id = `expl${q.id}`;
+    card.appendChild(expl);
+
+    container.appendChild(card);
+  });
+}
+
+function handleAnswer(e) {
+  const btn = e.currentTarget;
+  const qid = parseInt(btn.dataset.qid);
+  const letter = btn.dataset.letter;
+  if (answered[qid]) return;
+  answered[qid] = true;
+
+  const correct = ANSWERS[qid];
+  const card = document.getElementById(`q${qid}`);
+  const allBtns = card.querySelectorAll('.option');
+
+  allBtns.forEach(b => {
+    b.classList.add('disabled');
+    if (b.dataset.letter === correct && b !== btn) b.classList.add('revealed-correct');
+  });
+
+  if (letter === correct) {
+    btn.classList.add('correct');
+    playCorrect();
+    correctCount++;
+  } else {
+    btn.classList.add('wrong');
+    playWrong();
+  }
+
+  const expl = document.getElementById(`expl${qid}`);
+  expl.innerHTML = EXPLANATIONS[qid];
+  expl.classList.add('show');
+
+  updateScore();
+  if (Object.keys(answered).length === QUESTIONS.length) showResults();
+}
+
+function updateScore() {
+  const total = Object.keys(answered).length;
+  document.getElementById('score-display').textContent = `${correctCount} / 20`;
+  document.getElementById('progress-fill').style.width = `${(total / 20) * 100}%`;
+}
+
+function showResults() {
+  const banner = document.getElementById('results-banner');
+  banner.style.display = 'block';
+  const pct = Math.round((correctCount / 20) * 100);
+  document.getElementById('final-score').textContent = `${correctCount} / 20`;
+  document.getElementById('final-pct').textContent = `${pct}%`;
+  let msg = '';
+  if (pct >= 90) msg = 'Excellent! You have a strong command of technical writing principles and conventions.';
+  else if (pct >= 75) msg = 'Well done! A solid understanding — review a few concepts to reach mastery.';
+  else if (pct >= 55) msg = 'Good effort! Read through the explanations above to strengthen your understanding.';
+  else msg = 'Keep studying! The explanations above are a great starting point for review.';
+  document.getElementById('final-msg').textContent = msg;
+  banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+buildQuiz();
+</script>
+</body>
+</html>
